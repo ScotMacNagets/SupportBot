@@ -4,6 +4,9 @@ from fastapi import APIRouter
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from core.config import settings
+from core.connection_manager import manager
+from core.models import db_helper
+from services.chat_service import ChatService
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +16,8 @@ router = APIRouter(
 )
 
 @router.websocket("/ws")
-async def ws(websocket: WebSocket):
-    await websocket.accept()
+async def ws(websocket: WebSocket, user_id: int):
+    await manager.connect(websocket)
 
     try:
         while True:
@@ -22,4 +25,5 @@ async def ws(websocket: WebSocket):
             message = data["message"]
             await websocket.send_text(message)
     except WebSocketDisconnect:
-        logger.warning("WebSocket disconnected")
+        manager.disconnect(user_id)
+
