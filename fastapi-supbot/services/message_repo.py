@@ -1,7 +1,11 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from core.models import Message
 
 
 class MessageRepository:
+    def __init__(self, session: AsyncSession):
+        self.session = session
 
     async def create_message(
             self,
@@ -18,7 +22,7 @@ class MessageRepository:
             message=text,
         )
 
-        session.add(message)
-        await session.commit()
+        self.session.add(message)
+        await self.session.commit()
 
         return message

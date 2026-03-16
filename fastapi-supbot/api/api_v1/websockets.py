@@ -22,8 +22,16 @@ async def ws(websocket: WebSocket, user_id: int):
     try:
         while True:
             data = await websocket.receive_json()
-            message = data["message"]
-            await websocket.send_text(message)
+
+            text = data["message"]
+
+            async for session in db_helper.session_getter():
+                service = ChatService(session, manager)
+
+                await service.process_user_message(
+                    user_id=user_id,
+                    text=text,
+                )
     except WebSocketDisconnect:
         manager.disconnect(user_id)
 
