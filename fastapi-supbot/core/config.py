@@ -6,12 +6,17 @@ class RunConfig(BaseModel):
     host: str = "0.0.0.0"
     port: int = 8000
 
+class ApiV1Prefix(BaseModel):
+    prefix: str = "/v1"
+    websocket: str = "/websocket"
+
 class ApiPrefix(BaseModel):
     prefix: str = '/api'
+    v1: ApiV1Prefix = ApiV1Prefix()
 
 class DatabaseConfig(BaseModel):
     url: PostgresDsn
-    echo: bool = False
+    echo: bool = True
     echo_pool: bool = False
     max_overflow: int = 10
     pool_size: int = 50
