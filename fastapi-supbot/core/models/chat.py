@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, relationship, mapped_column
@@ -7,6 +7,7 @@ from sqlalchemy.orm import Mapped, relationship, mapped_column
 from .base import Base
 if TYPE_CHECKING:
     from .user import User
+    from .message import Message
 
 
 class Chat(Base):
@@ -19,3 +20,4 @@ class Chat(Base):
 
     user: Mapped["User"] = relationship(back_populates="chats")
     admin: Mapped["User"] = relationship(back_populates="admins")
+    messages: Mapped[List["Message"]] = relationship(back_populates="chat")

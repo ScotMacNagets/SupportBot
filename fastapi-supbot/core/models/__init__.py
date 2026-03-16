@@ -3,6 +3,7 @@ from .base import Base
 from .user import User
 from .admin import Admin
 from .chat import Chat
+from .message import Message
 
 __all__ = (
     "db_helper",
@@ -10,4 +11,5 @@ __all__ = (
     "User",
     "Chat",
     "Admin",
+    "Message",
 )
