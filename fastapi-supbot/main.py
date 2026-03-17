@@ -1,27 +1,36 @@
+import asyncio
+import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
+from aiogram import Dispatcher, Router
 from fastapi import FastAPI
 
 from api import router as api_router
+from bot import start_bot
+from core.bot_instance import bot
 from core.config import settings
 from core.models import db_helper
+from main_app import main_app
 
+logger = logging.getLogger(__name__)
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    yield
-    db_helper.dispose()
-main_app = FastAPI(
-    lifespan=lifespan,
-)
-main_app.include_router(api_router, prefix=settings.api.prefix)
-
-
-if __name__ == '__main__':
-    uvicorn.run(
+async def main():
+    config = uvicorn.Config(
         "main:main_app",
         host=settings.run.host,
         port=settings.run.port,
-        reload=True,
+        reload=False,
     )
+
+    server = uvicorn.Server(config)
+
+    bot_task = asyncio.create_task(start_bot())
+    uvicorn_task = asyncio.create_task(
+        server.serve()
+    )
+    await asyncio.gather(bot_task, uvicorn_task)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
