@@ -72,6 +72,18 @@ class ChatService:
             text=text,
         )
 
+        payload = {
+            "type": "message",
+            "message": {
+                "id": message.id,
+                "chat_id": chat.id,
+                "sender_id": message.sender_id,
+                "sender_role": message.sender_role,
+                "text": message.message,
+                "created_at": message.sent_at.isoformat(),
+            }
+        }
+
         await self.manager.send_to_user(
             data=payload,
             user_id=chat.user_id,
