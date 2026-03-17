@@ -1,6 +1,8 @@
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+class BotSettings(BaseModel):
+    token: str
 
 class RunConfig(BaseModel):
     host: str = "0.0.0.0"
@@ -32,6 +34,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
     db: DatabaseConfig
+    bot: BotSettings
 
 
 settings = Settings()
