@@ -25,7 +25,9 @@ class ChatRepository:
 
         active_chat = result.scalar_one_or_none()
 
-        return active_chat
+        if active_chat:
+            return active_chat
+        return None
 
     async def create_chat(self, user_id: int):
 
@@ -52,7 +54,10 @@ class ChatRepository:
         chat = result.scalar_one_or_none()
         return chat
 
-    async def assign_free_admin(self, chat_id: int):
+    async def assign_free_admin(
+            self,
+            chat_id:int,
+    ) -> Admin:
         query = select(Admin).where(
             Admin.status == "free"
         )
