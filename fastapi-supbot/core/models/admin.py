@@ -18,4 +18,4 @@ class Admin(Base):
     )
     status: Mapped[str] = mapped_column(default='free')
 
-    chats: Mapped[List["Chat"]] = relationship(back_populates="admins")
+    chats: Mapped[List["Chat"]] = relationship(back_populates="admin")
