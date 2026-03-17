@@ -23,8 +23,8 @@ class Chat(Base):
     status: Mapped[str]
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    admin_id: Mapped[int] = mapped_column(ForeignKey("admins.id"))
+    admin_id: Mapped[int | None] = mapped_column(ForeignKey("admins.id"))
 
     user: Mapped["User"] = relationship(back_populates="chats")
-    admin: Mapped["User"] = relationship(back_populates="admins")
+    admin: Mapped["Admin"] = relationship(back_populates="chats")
     messages: Mapped[List["Message"]] = relationship(back_populates="chat")
