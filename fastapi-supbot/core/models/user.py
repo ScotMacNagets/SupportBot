@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import List, TYPE_CHECKING
 
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy import DateTime, func
+from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from .base import Base
 if TYPE_CHECKING:
@@ -10,6 +11,9 @@ if TYPE_CHECKING:
 
 class User(Base):
     username: Mapped[str]
-    created_at: Mapped[datetime]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
 
     chats: Mapped[List["Chat"]] = relationship(back_populates="user")
