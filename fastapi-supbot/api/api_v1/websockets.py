@@ -17,7 +17,7 @@ router = APIRouter(
 
 @router.websocket("/ws")
 async def ws(websocket: WebSocket, user_id: int):
-    await manager.connect(websocket)
+    await manager.connect(websocket=websocket, user_id=user_id)
 
     try:
         while True:
