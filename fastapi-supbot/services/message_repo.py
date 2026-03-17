@@ -16,10 +16,10 @@ class MessageRepository:
     ):
 
         message = Message(
-            chat_id=chat_id,
             sender_id=sender_id,
             sender_role=sender_role,
             message=text,
+            chat_id=chat_id,
         )
 
         self.session.add(message)
