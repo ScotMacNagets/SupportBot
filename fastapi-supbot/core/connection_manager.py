@@ -20,7 +20,15 @@ class ConnectionManager:
         if websocket:
             await websocket.send_json(data)
 
-    async def send_to_admin(self, admin_id: int, chat_id: int, text: str):
+    @staticmethod
+    async def send_to_admin(
+            admin_id: int,
+            chat_id: int,
+            text: str,
+            session: AsyncSession,
+    ):
+
+        message = f"Message: \n\n{text}"
 
         message = (
             f"ChatID: {chat_id}\n\n",
