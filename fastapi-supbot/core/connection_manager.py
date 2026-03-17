@@ -1,4 +1,19 @@
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.websockets import WebSocket
+
+# from core.bot_instance import bot
+# from core.models import Message
+#
+#
+# async def send_to_admin(admin_id: int, chat_id: int, text: str):
+#
+#     message = (
+#         f"ChatID: {chat_id}\n\n",
+#         f"Message: \n{text}",
+#     )
+#
+#     await bot.send_message(admin_id, message)
 
 
 class ConnectionManager:
@@ -30,11 +45,25 @@ class ConnectionManager:
 
         message = f"Message: \n\n{text}"
 
-        message = (
-            f"ChatID: {chat_id}\n\n",
-            f"Message: \n{text}",
-        )
+        msg = await bot.send_message(admin_id, message)
+        telegram_message_id = msg.message_id
 
-        await bot.send_message(admin_id, message)
+        query = (
+            select(Message)
+            .where(
+                Message.chat_id == chat_id,
+                Message.telegram_message_id.is_(None),
+            )
+            .order_by(Message.id.desc())
+        )
+        result = await session.execute(query)
+        msg_model = result.scalars().first()
+        if msg_model:
+            msg_model.telegram_message_id = telegram_message_id
+            await session.commit()
+        
+
+
+
 
 manager = ConnectionManager()
