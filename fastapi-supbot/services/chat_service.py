@@ -53,6 +53,35 @@ class ChatService:
                 session=self.session,
             )
 
+        #сохраняем сообщение в бд
+        message = await self.message_repo.create_message(
+            sender_id=user_id,
+            sender_role="user",
+            text=text,
+            chat_id=chat.id,
+            self_send=True,
+        )
+
+        #отправляем пользователю его же сообщение
+        payload = {
+            "type": "message",
+            "message": {
+                "id": message.id,
+                "chat_id": message.chat_id,
+                "sender_id": message.sender_id,
+                "sender_role": message.sender_role,
+                "text": message.message,
+                "created_at": message.sent_at.isoformat(),
+            }
+        }
+
+        await self.manager.send_to_user(
+            user_id=user_id,
+            data=payload,
+        )
+
+
+
 
     async def process_admin_message(
             self,
