@@ -1,5 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from core.models import Chat, Admin
 
@@ -16,10 +17,12 @@ class ChatRepository:
             user_id: int,
     ):
 
-        query = select(Chat).where(
+        query = (select(Chat)
+        .options(selectinload(Chat.admin))
+        .where(
             Chat.user_id == user_id,
             Chat.status == "active"
-        )
+        ))
 
         result = await self.session.execute(query)
 
