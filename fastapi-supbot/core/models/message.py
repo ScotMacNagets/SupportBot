@@ -19,6 +19,7 @@ class Message(Base):
         server_default=func.now()
     )
     telegram_message_id: Mapped[int | None] = mapped_column(unique=True, nullable=True)
+    delivered: Mapped[bool] = mapped_column(default=False)
 
     chat_id: Mapped[int] = mapped_column(ForeignKey("chats.id"))
     chat: Mapped["Chat"] = relationship(back_populates="messages")
