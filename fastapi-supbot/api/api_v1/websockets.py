@@ -17,16 +17,16 @@ router = APIRouter(
 
 @router.websocket("/ws")
 async def ws(websocket: WebSocket, user_id: int):
-    await manager.connect(websocket=websocket, user_id=user_id)
+    async for session in db_helper.session_getter():
+        service = ChatService(session, manager)
 
-    try:
-        while True:
-            data = await websocket.receive_json()
+        await manager.connect(websocket=websocket, user_id=user_id)
 
-            text = data["message"]
 
-            async for session in db_helper.session_getter():
-                service = ChatService(session, manager)
+        try:
+            while True:
+                data = await websocket.receive_json()
+                text = data["message"]
 
                 await service.process_user_message(
                     user_id=user_id,
