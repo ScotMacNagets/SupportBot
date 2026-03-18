@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class ChatService:
 
-    def __init__(self, session: AsyncSession, manager):
+    def __init__(self, session: AsyncSession, manager: ConnectionManager):
 
         self.session = session
         self.manager = manager
@@ -46,7 +46,7 @@ class ChatService:
             admin = await self.chat_repo.assign_free_admin(chat_id=chat.id)
 
         if admin and admin.telegram_id:
-            await self.manager.send_to_admin(
+            await self._send_to_admin(
                 admin_id=admin.telegram_id,
                 chat_id=chat.id,
                 text=text,
@@ -67,9 +67,6 @@ class ChatService:
 
         message = await self.message_repo.create_message(
             chat_id=chat.id,
-            sender_id=admin_id,
-            sender_role="admin",
-            text=text,
         )
 
         payload = {
@@ -88,3 +85,29 @@ class ChatService:
             data=payload,
             user_id=chat.user_id,
         )
+    async def _send_to_admin(
+            self,
+            admin_id: int,
+            chat_id: int,
+            text: str,
+    ):
+        #формуруем и отправляем сообщение
+        message = f"Message: \n\n{text}"
+
+        msg = await bot.send_message(admin_id, message)
+        telegram_message_id = msg.message_id
+
+        #записываем id сообщения в бд, чтобы потом определить чат
+        query = (
+            select(Message)
+            .where(
+                Message.chat_id == chat_id,
+                Message.telegram_message_id.is_(None),
+            )
+            .order_by(Message.id.desc())
+        )
+        result = await self.session.execute(query)
+        msg_model = result.scalars().first()
+        if msg_model:
+            msg_model.telegram_message_id = telegram_message_id
+            await self.session.commit()
