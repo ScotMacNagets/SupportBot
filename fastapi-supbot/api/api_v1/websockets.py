@@ -32,6 +32,6 @@ async def ws(websocket: WebSocket, user_id: int):
                     user_id=user_id,
                     text=text,
                 )
-    except WebSocketDisconnect:
-        manager.disconnect(user_id)
+        except WebSocketDisconnect:
+            await manager.disconnect(user_id)
 
