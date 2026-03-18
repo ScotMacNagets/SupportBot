@@ -137,3 +137,35 @@ class ChatService:
         if msg_model:
             msg_model.telegram_message_id = telegram_message_id
             await self.session.commit()
+
+
+    async def send_missed_messages(self, user_id: int):
+        #достаем сообщения, которые не были отправлены
+        messages = await self.message_repo.get_undelivered(user_id)
+
+        #получаем соединение для пользователя
+        websocket = self.manager.get_active_connections(user_id=user_id)
+        if not websocket:
+            logger.info(f"No active connections for {user_id}")
+            return
+        #отправляем сообщения
+        for message in messages:
+            payload = {
+                "type": "message",
+                "message": {
+                    "id": message.id,
+                    "chat_id": message.chat_id,
+                    "sender_id": message.sender_id,
+                    "sender_role": message.sender_role,
+                    "text": message.message,
+                    "created_at": message.sent_at.isoformat(),
+                }
+            }
+            #отправляем сообщение
+            sent = await self.manager.send_to_user(
+                user_id=user_id,
+                data=payload,
+            )
+            # помечаем сообщения, как доставленные
+            await self.message_repo.mark_message_delivered(message_id=message.id)
+
