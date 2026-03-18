@@ -21,6 +21,7 @@ async def ws(websocket: WebSocket, user_id: int):
         service = ChatService(session, manager)
 
         await manager.connect(websocket=websocket, user_id=user_id)
+        await service.send_missed_messages(user_id=user_id)
 
 
         try:
