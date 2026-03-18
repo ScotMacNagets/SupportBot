@@ -22,24 +22,12 @@ class ChatService:
         self.message_repo = MessageRepository(session)
 
     async def process_user_message(self, user_id: int, text: str):
+        #достаем чат или создаем новый
         chat = await self.chat_repo.get_active_chat(user_id)
         if not chat:
             chat = await self.chat_repo.create_chat(user_id)
 
-        await self.message_repo.create_message(
-            sender_id=user_id,
-            sender_role="user",
-            text=text,
-            chat_id=chat.id,
-        )
-
-        chat = await self.session.execute(
-            select(Chat)
-            .options(selectinload(Chat.admin))  # сразу подгружаем admin
-            .where(Chat.status == "active", Chat.user_id == user_id)
-        )
-        chat = chat.scalars().first()
-
+        # назначаем админа, если его нет
         admin = chat.admin
 
         if not admin:
@@ -50,7 +38,6 @@ class ChatService:
                 admin_id=admin.telegram_id,
                 chat_id=chat.id,
                 text=text,
-                session=self.session,
             )
 
         #сохраняем сообщение в бд
@@ -89,11 +76,12 @@ class ChatService:
             chat_id: int,
             text: str,
     ):
+        #получаем чат, в котором происходит диалог
         chat = await self.chat_repo.get_chat(chat_id)
         if not chat:
             logger.info(f"Chat {chat_id} not found")
             return
-
+        #создаем сообщение и прикрепляем его к чату
         message = await self.message_repo.create_message(
             chat_id=chat.id,
         )
@@ -111,6 +99,7 @@ class ChatService:
         }
 
         await self.manager.send_to_user(
+        #отправляем сообщение пользователю
             data=payload,
             user_id=chat.user_id,
         )
