@@ -2,9 +2,11 @@ import logging
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import Session
 
-from core.models import Chat
+from core.bot_instance import bot
+from core.connection_manager import ConnectionManager
+from core.models import Message
 from .chat_repo import ChatRepository
 from .message_repo import MessageRepository
 
@@ -83,6 +85,9 @@ class ChatService:
             return
         #создаем сообщение и прикрепляем его к чату
         message = await self.message_repo.create_message(
+            sender_id=admin_id,
+            sender_role="admin",
+            text=text,
             chat_id=chat.id,
         )
 
@@ -90,19 +95,22 @@ class ChatService:
             "type": "message",
             "message": {
                 "id": message.id,
-                "chat_id": chat.id,
+                "chat_id": message.chat_id,
                 "sender_id": message.sender_id,
                 "sender_role": message.sender_role,
                 "text": message.message,
                 "created_at": message.sent_at.isoformat(),
             }
         }
-
-        await self.manager.send_to_user(
         #отправляем сообщение пользователю
+        delivered = await self.manager.send_to_user(
             data=payload,
             user_id=chat.user_id,
         )
+
+        if delivered:
+            await self.message_repo.mark_message_delivered(message_id=message.id)
+
     async def _send_to_admin(
             self,
             admin_id: int,
