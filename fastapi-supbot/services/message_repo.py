@@ -1,12 +1,18 @@
+import logging
+
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from core.models import Message
+from core.models import Message, Chat
+
+logger = logging.getLogger(__name__)
 
 
 class MessageRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
+    #Создание сообщения
     async def create_message(
             self,
             chat_id: int,
@@ -27,6 +33,7 @@ class MessageRepository:
 
         return message
 
+    #получить неотправленные сообщения для пользователя из бд
     async def get_undelivered(self, user_id: int):
         query = (
             select(Message)
