@@ -3,6 +3,7 @@ import logging
 from aiogram import Router
 from aiogram.types import Message as TelegramMessage
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from core.connection_manager import manager
 from core.models import db_helper, Admin, Message
@@ -13,7 +14,10 @@ router = Router()
 logger = logging.getLogger(__name__)
 
 @router.message()
-async def admin_reply(message: TelegramMessage):
+async def admin_reply(
+        message: TelegramMessage,
+        session: Session,
+):
 
     if not message.reply_to_message:
         await message.reply(
@@ -50,3 +54,5 @@ async def admin_reply(message: TelegramMessage):
             chat_id=src_message.chat_id,
             text=message.text,
         )
+
+
