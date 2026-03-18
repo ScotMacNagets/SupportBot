@@ -19,6 +19,7 @@ class MessageRepository:
             sender_id: int,
             sender_role:str,
             text: str,
+            self_send: bool = False,
     ):
 
         message = Message(
@@ -26,6 +27,7 @@ class MessageRepository:
             sender_role=sender_role,
             message=text,
             chat_id=chat_id,
+            delivered=True if self_send else False,
         )
 
         self.session.add(message)
