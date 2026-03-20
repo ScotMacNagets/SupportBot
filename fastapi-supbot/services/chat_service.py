@@ -4,9 +4,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
+import keyboards
 from core.bot_instance import bot
 from core.connection_manager import ConnectionManager
-from core.models import Message
+from core.models import Message, Chat, Admin
 from .chat_repo import ChatRepository
 from .message_repo import MessageRepository
 
@@ -38,6 +39,23 @@ class ChatService:
             chat_id=chat.id,
             self_send=True,
         )
+
+
+        #Если чат активный, то посылаем админу сообщение
+        if chat.status == "active" and chat.admin:
+            await self._send_to_admin(
+                admin_id=chat.admin.telegram_id,
+                chat_id=chat.id,
+                text=text,
+                first_message = False
+            )
+
+        elif chat.status == "new":
+            await self._notify_admins_about_new_chat(
+                chat_id=chat.id,
+                text=text,
+            )
+
 
         #отправляем пользователю его же сообщение
         payload = {
@@ -106,12 +124,19 @@ class ChatService:
             text: str,
     ):
         #формуруем и отправляем сообщение
-        message = f"Message: \n\n{text}"
+        message = f"Новое сообщение от пользователя: \n\n{text}"
 
-        msg = await bot.send_message(admin_id, message)
+        msg = await bot.send_message(
+            chat_id=admin_id,
+            text=message,
+            reply_markup=await keyboards.answer_keyboard(
+                chat_id=chat_id,
+                first_message=first_message,
+            ),
+        )
         telegram_message_id = msg.message_id
 
-        #записываем id сообщения в бд, чтобы потом определить чат
+        #записываем id сообщения в бд для дебага и статистики
         query = (
             select(Message)
             .where(
