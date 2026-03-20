@@ -6,8 +6,10 @@ from sqlalchemy.orm import Session
 
 import keyboards
 from core.bot_instance import bot
+from core.config import settings
 from core.connection_manager import ConnectionManager
 from core.models import Message, Chat, Admin
+from core.text import ChatServiceText
 from .chat_repo import ChatRepository
 from .message_repo import MessageRepository
 
@@ -42,15 +44,16 @@ class ChatService:
 
 
         #Если чат активный, то посылаем админу сообщение
-        if chat.status == "active" and chat.admin:
+        if chat.status == settings.chat_states.active and chat.admin:
             await self._send_to_admin(
                 admin_id=chat.admin.telegram_id,
                 chat_id=chat.id,
                 text=text,
-                first_message = False
+                # first_message = False
             )
 
-        elif chat.status == "new":
+        #если новый, то просто посылаем уведомление всем свободным админам
+        elif chat.status == settings.chat_states.new:
             await self._notify_admins_about_new_chat(
                 chat_id=chat.id,
                 text=text,
@@ -87,7 +90,7 @@ class ChatService:
         #получаем чат, в котором происходит диалог
         chat = await self.chat_repo.get_chat(chat_id)
         if not chat:
-            logger.info(f"Chat {chat_id} not found")
+            logger.info(f"Chat %s not found", chat_id)
             return
         #создаем сообщение и прикрепляем его к чату
         message = await self.message_repo.create_message(
@@ -144,14 +147,16 @@ class ChatService:
             # first_message: bool = True,
     ):
         #формуруем и отправляем сообщение
-        message = f"Новое сообщение от пользователя: \n\n{text}"
+        message = ChatServiceText.SEND_TO_ADMIN_MESSAGE.format(
+            text=text,
+        )
 
         msg = await bot.send_message(
             chat_id=admin_id,
             text=message,
             reply_markup=await keyboards.answer_keyboard(
                 chat_id=chat_id,
-                first_message=first_message,
+                # first_message=first_message,
             ),
         )
         telegram_message_id = msg.message_id
@@ -179,7 +184,7 @@ class ChatService:
         #получаем соединение для пользователя
         websocket = self.manager.get_active_connections(user_id=user_id)
         if not websocket:
-            logger.info(f"No active connections for {user_id}")
+            logger.info(f"No active connections for %s", user_id)
             return
         #отправляем сообщения
         for message in messages:

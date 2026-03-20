@@ -2,6 +2,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from core.config import settings
 from core.models import Chat, Admin
 
 
@@ -21,7 +22,7 @@ class ChatRepository:
         .options(selectinload(Chat.admin))
         .where(
             Chat.user_id == user_id,
-            Chat.status == "active"
+            Chat.status == settings.chat_states.active,
         ))
 
         result = await self.session.execute(query)
@@ -36,7 +37,7 @@ class ChatRepository:
 
         chat = Chat(
             user_id=user_id,
-            status="new",
+            status=settings.chat_states.new,
         )
 
         self.session.add(chat)
