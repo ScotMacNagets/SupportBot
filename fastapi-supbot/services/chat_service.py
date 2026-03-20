@@ -29,18 +29,6 @@ class ChatService:
         if not chat:
             chat = await self.chat_repo.create_chat(user_id)
 
-        # назначаем админа, если его нет
-        admin = chat.admin
-
-        if not admin:
-            admin = await self.chat_repo.assign_free_admin(chat_id=chat.id)
-
-        if admin and admin.telegram_id:
-            await self._send_to_admin(
-                admin_id=admin.telegram_id,
-                chat_id=chat.id,
-                text=text,
-            )
 
         #сохраняем сообщение в бд
         message = await self.message_repo.create_message(
