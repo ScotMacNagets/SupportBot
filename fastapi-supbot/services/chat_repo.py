@@ -36,7 +36,7 @@ class ChatRepository:
 
         chat = Chat(
             user_id=user_id,
-            status="active",
+            status="new",
         )
 
         self.session.add(chat)
