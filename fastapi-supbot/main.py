@@ -1,17 +1,10 @@
 import asyncio
 import logging
-from contextlib import asynccontextmanager
 
 import uvicorn
-from aiogram import Dispatcher, Router
-from fastapi import FastAPI
 
-from api import router as api_router
 from bot import start_bot
-from core.bot_instance import bot
 from core.config import settings
-from core.models import db_helper
-from main_app import main_app
 
 logger = logging.getLogger(__name__)
 
