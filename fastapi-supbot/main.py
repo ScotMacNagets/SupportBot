@@ -26,4 +26,10 @@ async def main():
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Shutting down bot")
+    finally:
+        logger.info("Shutting down fastapi-supbot")
+        logger.info("Shutting down server")
