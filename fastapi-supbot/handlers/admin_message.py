@@ -7,8 +7,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from callbacks.admin_message_callback import AdminAction
+from core.config import settings
 from core.connection_manager import manager
 from core.models import Admin, Message, Chat
+from core.text import AdminMessage
 from services.chat_service import ChatService
 
 router = Router()
@@ -68,17 +70,17 @@ async def admin_answer(
         select(Admin).where(Admin.telegram_id == query.from_user.id)
     )
 
-    if chat.status == "closed":
+    if chat.status == settings.chat_states.closed:
         await query.answer()
         await query.message.answer(
-            text="🗂 Диалог уже закрыт"
+            text=AdminMessage.ALREADY_CLOSED
         )
         return
 
-    if chat.status == "active":
+    if chat.status == settings.chat_states.active:
         await query.answer()
         await query.message.answer(
-            text="😒 Ой, уже кто то занял чат",
+            text=AdminMessage.ALREADY_TOOK,
         )
         return
     await session.commit()
@@ -86,11 +88,11 @@ async def admin_answer(
     if admin.current_chat_id:
         await query.answer()
         await query.message.answer(
-            "🤔 Сначала заверши свой текущий диалог"
+            text=AdminMessage.CLOSE_YOUR_CURRENT_CHAT
         )
         return
 
-    chat.status = "active"
+    chat.status = settings.chat_states.active
     chat.admin_id = admin.id
 
     admin.current_chat_id = chat.id
@@ -99,7 +101,7 @@ async def admin_answer(
 
     await query.answer()
     await query.message.answer(
-        "✅ Ты принял диалог"
+        text=AdminMessage.ACCEPTED_CHAT
     )
 
 @router.callback_query(AdminAction.filter(F.action == "close"))
@@ -114,20 +116,20 @@ async def admin_answer(
         select(Admin).where(Admin.telegram_id == query.from_user.id)
     )
 
-    if chat.status == "closed":
+    if chat.status == settings.chat_states.closed:
         await query.answer()
         await query.message.answer(
-            text="🗂 Диалог уже закрыт"
+            text=AdminMessage.ALREADY_CLOSED
         )
 
     if admin.current_chat_id != chat.id:
         await query.answer()
         await query.message.answer(
-            text="Сначала ✅ прими диалог, а потом нажми кнопку ⛔ закрыть"
+            text=AdminMessage.ACCEPT_THEN_CLOSE
         )
         return
 
-    chat.status = "closed"
+    chat.status = settings.chat_states.closed
     chat.closed_at = datetime.now(timezone.utc)
 
     admin.current_chat_id = None
@@ -136,7 +138,7 @@ async def admin_answer(
 
     await query.answer()
     await query.message.answer(
-        text="✅ Диалог успешно завершен",
+        text=AdminMessage.SUCCESSFULLY_CLOSED,
     )
 
 @router.message()
@@ -153,15 +155,15 @@ async def admin_answer(
 
     if not admin.current_chat_id:
         await message.answer(
-            text="⛔ У тебя нет активного диалога"
+            text=AdminMessage.DONT_HAVE_ACTIVE_CHAT
         )
         return
 
     chat = await session.get(Chat, admin.current_chat_id)
 
-    if chat.status != "active":
+    if chat.status != settings.chat_states.active:
         await message.answer(
-            text="🗂 Диалог уже закрыт",
+            text=AdminMessage.ALREADY_CLOSED,
         )
         return
 

@@ -5,6 +5,7 @@ from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.models import db_helper, Admin
+from core.text import AdminRegister
 
 router = Router()
 
@@ -36,5 +37,8 @@ async def admin_register(
         session=session,
     )
     await message.answer(
-        text=f"Вы успешно зарегестрированы\n\n username: {username}\ntelegram_id: {telegram_id}",
+        text=AdminRegister.SUCCESSFUL_REGISTRATION.format(
+            username=username,
+            telegram_id=telegram_id,
+        ),
     )
