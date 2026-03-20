@@ -117,6 +117,25 @@ class ChatService:
         if delivered:
             await self.message_repo.mark_message_delivered(message_id=message.id)
 
+    async def _notify_admins_about_new_chat(self, chat_id: int, text: str):
+        query = select(Admin).where(
+            Admin.current_chat_id == None,
+        )
+        result = await self.session.execute(query)
+
+        admins = result.scalars().all()
+
+        if not admins:
+            logger.info("Свободных админов нет")
+            return
+
+        for admin in admins:
+            await self._send_to_admin(
+                admin_id=admin.telegram_id,
+                chat_id=chat_id,
+                text=text,
+            )
+
     async def _send_to_admin(
             self,
             admin_id: int,
