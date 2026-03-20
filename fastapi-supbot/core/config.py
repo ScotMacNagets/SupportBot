@@ -7,6 +7,12 @@ class BotSettings(BaseModel):
 class RunConfig(BaseModel):
     host: str = "localhost"
     port: int = 8000
+
+class ChatStates(BaseModel):
+    new: str = "new"
+    active: str = "active"
+    closed: str = "closed"
+
 class AdminActionPrefix(BaseModel):
     prefix: str = "adm"
 
@@ -40,6 +46,7 @@ class Settings(BaseSettings):
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
     cb: CallbackDataPrefix = CallbackDataPrefix()
+    chat_states: ChatStates = ChatStates()
     db: DatabaseConfig
     bot: BotSettings
 
