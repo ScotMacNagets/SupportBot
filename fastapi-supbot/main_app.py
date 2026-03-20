@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Lifespan events started")
     yield
-    db_helper.dispose()
+    await db_helper.dispose()
     logger.info("Lifespan events started")
 main_app = FastAPI(
     lifespan=lifespan,
