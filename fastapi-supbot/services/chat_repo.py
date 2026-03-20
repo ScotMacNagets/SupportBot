@@ -57,27 +57,30 @@ class ChatRepository:
         chat = result.scalar_one_or_none()
         return chat
 
-    async def assign_free_admin(
-            self,
-            chat_id:int,
-    ) -> Admin:
-        query = select(Admin).where(
-            Admin.status == "free"
-        )
-
-        result = await self.session.execute(query)
-
-        admin = result.scalars().first()
-
-        if not admin:
-            return None
-
-        admin.status = "busy"
-
-        chat = await self.session.get(Chat, chat_id)
-        chat.admin_id = admin.id
-
-        await self.session.commit()
-
-        return admin
+# USELESS
+    # async def assign_free_admin(
+    #         self,
+    #         chat_id:int,
+    # ) -> Admin:
+    #     #Выбираем админа, у которого пока что нет свободного чата
+    #     query = select(Admin).where(
+    #         Admin.current_chat_id != None,
+    #     )
+    #
+    #     result = await self.session.execute(query)
+    #
+    #     admin = result.scalars().first()
+    #
+    #     if not admin:
+    #         return None
+    #
+    #     #Назначаем админу чат
+    #     admin.current_chat_id = chat_id
+    #
+    #     chat = await self.session.get(Chat, chat_id)
+    #     chat.admin_id = admin.id
+    #
+    #     await self.session.commit()
+    #
+    #     return admin
 
