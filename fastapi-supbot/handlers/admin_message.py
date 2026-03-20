@@ -1,22 +1,20 @@
 import logging
+from datetime import datetime, timezone
 
-from aiogram import Router
-from aiogram.types import Message as TelegramMessage
+from aiogram import Router, F
+from aiogram.types import Message as TelegramMessage, CallbackQuery
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from callbacks.admin_message_callback import AdminAction
 from core.connection_manager import manager
-from core.models import db_helper, Admin, Message
+from core.models import Admin, Message, Chat
 from services.chat_service import ChatService
 
 router = Router()
 
 logger = logging.getLogger(__name__)
 
-@router.message()
-async def admin_reply(
-        message: TelegramMessage,
-        session: Session,
 # @router.message()
 # async def admin_reply(
 #         message: TelegramMessage,
@@ -59,15 +57,80 @@ async def admin_reply(
 #         text=message.text,
 #     )
 
+@router.callback_query(AdminAction.filter(F.action == "answer"))
+async def admin_answer(
+        query: CallbackQuery,
+        callback_data: AdminAction,
+        session: AsyncSession,
 ):
+    chat = await session.get(Chat, callback_data.chat_id)
+    admin = await session.scalar(
+        select(Admin).where(Admin.telegram_id == query.from_user.id)
+    )
 
-    if not message.reply_to_message:
-        await message.reply(
-            text="Ответь реплаем на сообщение пользователя, чтобы отправить ответ в чат."
+    if chat.status == "closed":
+        await query.answer()
+        await query.message.answer(
+            text="🗂 Диалог уже закрыт"
         )
         return
 
-    replied_msg_id = message.reply_to_message.message_id
+    if chat.status == "active":
+        await query.answer()
+        await query.message.answer(
+            text="😒 Ой, уже кто то занял чат",
+        )
+        return
+    await session.commit()
+
+    if admin.current_chat_id:
+        await query.answer()
+        await query.message.answer(
+            "🤔 Сначала заверши свой текущий диалог"
+        )
+        return
+
+    chat.status = "active"
+    chat.admin_id = admin.id
+
+    admin.current_chat_id = chat.id
+
+    await session.commit()
+
+    await query.answer()
+    await query.message.answer(
+        "✅ Ты принял диалог"
+    )
+
+@router.callback_query(AdminAction.filter(F.action == "close"))
+async def admin_answer(
+        query: CallbackQuery,
+        callback_data: AdminAction,
+        session: AsyncSession,
+):
+    chat = await session.get(Chat, callback_data.chat_id)
+
+    admin = await session.scalar(
+        select(Admin).where(Admin.telegram_id == query.from_user.id)
+    )
+
+    if chat.status == "closed":
+        await query.answer()
+        await query.message.answer(
+            text="🗂 Диалог уже закрыт"
+        )
+
+    if admin.current_chat_id != chat.id:
+        await query.answer()
+        await query.message.answer(
+            text="Сначала ✅ прими диалог, а потом нажми кнопку ⛔ закрыть"
+        )
+        return
+
+    chat.status = "closed"
+    chat.closed_at = datetime.now(timezone.utc)
+
+    admin.current_chat_id = None
 
     async for session in db_helper.session_getter():
         admin = await session.scalar(
@@ -76,6 +139,13 @@ async def admin_reply(
         if not admin:
             await message.reply("Ты не зарегистрирован, как админ в системе")
             return
+    await session.commit()
+
+    await query.answer()
+    await query.message.answer(
+        text="✅ Диалог успешно завершен",
+    )
+
 
         src_message = await session.scalar(
             select(Message).where(Message.telegram_message_id == replied_msg_id)
