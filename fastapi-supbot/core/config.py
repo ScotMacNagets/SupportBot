@@ -7,6 +7,12 @@ class BotSettings(BaseModel):
 class RunConfig(BaseModel):
     host: str = "localhost"
     port: int = 8000
+class AdminActionPrefix(BaseModel):
+    prefix: str = "adm"
+
+class CallbackDataPrefix(BaseModel):
+    admin_action: AdminActionPrefix = AdminActionPrefix()
+
 
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
@@ -33,6 +39,7 @@ class Settings(BaseSettings):
     )
     run: RunConfig = RunConfig()
     api: ApiPrefix = ApiPrefix()
+    cb: CallbackDataPrefix = CallbackDataPrefix()
     db: DatabaseConfig
     bot: BotSettings
 
