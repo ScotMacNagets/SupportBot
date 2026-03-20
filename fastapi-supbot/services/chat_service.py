@@ -141,6 +141,7 @@ class ChatService:
             admin_id: int,
             chat_id: int,
             text: str,
+            # first_message: bool = True,
     ):
         #формуруем и отправляем сообщение
         message = f"Новое сообщение от пользователя: \n\n{text}"
