@@ -1,6 +1,7 @@
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class BotSettings(BaseModel):
     token: str
 
@@ -47,6 +48,7 @@ class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     cb: CallbackDataPrefix = CallbackDataPrefix()
     chat_states: ChatStates = ChatStates()
+    cb_sep: CallbackDataSep = CallbackDataSep()
     db: DatabaseConfig
     bot: BotSettings
 
