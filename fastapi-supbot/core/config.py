@@ -14,12 +14,19 @@ class ChatStates(BaseModel):
     active: str = "active"
     closed: str = "closed"
 
+class SuperUserMenuPrefix(BaseModel):
+    prefix: str = "superuser"
+
+class SuperUserAdminDeletePrefix(BaseModel):
+    prefix: str = "admin_delete"
+
 class AdminActionPrefix(BaseModel):
     prefix: str = "adm"
 
 class CallbackDataPrefix(BaseModel):
     admin_action: AdminActionPrefix = AdminActionPrefix()
-
+    superuser_admin_delete: SuperUserAdminDeletePrefix = SuperUserAdminDeletePrefix()
+    superuser_menu: SuperUserMenuPrefix = SuperUserMenuPrefix()
 
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
