@@ -40,7 +40,6 @@ async def superuser_menu(
 @router.callback_query(SuperuserMenu.filter(F.action == SuperuserAction.realise_new_key))
 async def realise_new_key(
         query: CallbackQuery,
-        callback_data: SuperuserMenuAction,
         session: AsyncSession,
 ):
     new_key = await generate_new_key(session=session)
