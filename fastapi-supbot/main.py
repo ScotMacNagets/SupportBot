@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 async def main():
     config = uvicorn.Config(
-        "main:main_app",
+        "main_app:main_app",
         host=settings.run.host,
         port=settings.run.port,
         reload=False,
