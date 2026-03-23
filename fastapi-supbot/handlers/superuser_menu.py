@@ -1,5 +1,6 @@
 
 from aiogram import Router, F
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 
 from aiogram.types import Message, CallbackQuery
@@ -27,13 +28,13 @@ async def superuser_menu(
 
     if is_superuser:
         await message.answer(
-            text="Доброе пожаловать в меню супер-пользователя:",
+            text=AdminSuperuser.WELCOME_TO_SUPERUSER_MENU,
             reply_markup=await build_superuser_menu_keyboard()
         )
         return
 
     await message.answer(
-        text="У тебя нет доступа к этому меню"
+        text=AdminSuperuser.NOT_ENOUGH_RIGHTS,
     )
 
 @router.callback_query(SuperuserMenu.filter(F.action == SuperuserAction.realise_new_key))
@@ -46,30 +47,35 @@ async def realise_new_key(
     if new_key:
         await query.answer()
         await query.message.edit_text(
-            text=f"Новый ключ сгенерирован: \n\n{new_key}"
+            text=AdminSuperuser.NEW_KEY_GENERATED.format(
+                new_key=new_key,
+            ),
+            reply_markup= await back_to_the_main_menu_keyboard(),
+            parse_mode=ParseMode.HTML,
         )
     else:
         await query.answer()
         await query.message.edit_text(
-            text="Не удалось сгенерировать новый ключ, попробуйте позже"
+            text=AdminSuperuser.CANNOT_GENERATE_THE_KEY,
+            reply_markup= await back_to_the_main_menu_keyboard()
         )
 
 @router.callback_query(SuperuserMenu.filter(F.action == SuperuserAction.admin_list))
 async def admin_list(
         query: CallbackQuery,
-        callback_data: SuperuserMenuAction,
         session: AsyncSession,
 ):
     admins = await get_all_admins(session=session)
     await query.answer()
     await query.message.edit_text(
-        text="Список админов (если админа нет в списке, значит он сейчас занят):",
-        reply_markup=build_admin_list(admins=admins)
+        text=AdminSuperuser.ADMIN_LIST,
+        reply_markup=await build_admin_list(admins=admins)
     )
 
 @router.callback_query(SuperuserAdminDelete.filter(F.action == SuperuserDeleteActions.admin_delete))
+async def delete_admin_handler(
     query: CallbackQuery,
-    callback_data: AdminDeleteAction,
+    callback_data: SuperuserAdminDelete,
     session: AsyncSession,
 ):
     admin = await get_admin(
@@ -79,19 +85,25 @@ async def admin_list(
     if admin:
         await query.answer()
         await query.message.edit_text(
-            text=f"Admin:{admin.username} \n\n telegram_id:{admin.telegram_id} \n\n created_at:{admin.created_at}",
-            reply_markup=await delete_admin_keyboard(telegram_id=admin.telegram_id)
+            text=AdminSuperuser.ADMIN_FORMAT_DETAIL.format(
+                telegram_id=admin.telegram_id,
+                username=admin.username,
+                created_at=admin.created_at,
+            ),
+            parse_mode=ParseMode.HTML,
+            reply_markup=await delete_admin_keyboard(telegram_id=admin.telegram_id),
         )
         return
     await query.answer()
     await query.message.edit_text(
-        text="Админ не найден, попробуйте позже"
+        text=AdminSuperuser.ADMIN_NOT_FOUND,
+        reply_markup= await back_to_the_main_menu_keyboard()
     )
 
 @router.callback_query(SuperuserAdminDelete.filter(F.action == SuperuserDeleteActions.confirm_delete))
 async def confirm_delete(
         query: CallbackQuery,
-        callback_data: AdminDeleteAction,
+        callback_data: SuperuserAdminDelete,
         session: AsyncSession,
 ):
     admin = await get_admin_before_delete(
@@ -101,13 +113,16 @@ async def confirm_delete(
     if admin:
         await query.answer()
         await query.message.edit_text(
-            text=f"✅ Админ: {admin.username} успешно удален"
+            text=AdminSuperuser.SUCCESSFULLY_DELETED.format(
+                username=admin.username,
+            )
         )
         return
     await query.answer()
     await query.message.edit_text(
-        text="Админ уже начал с кем то диалог, попробуйте позже"
-    )
+        text=AdminSuperuser.ADMIN_IS_BUSY,
+        )
+
 
 
 
