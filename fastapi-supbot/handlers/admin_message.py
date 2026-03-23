@@ -104,7 +104,18 @@ async def admin_answer(
         text=AdminMessage.ACCEPTED_CHAT
     )
 
-@router.callback_query(AdminAction.filter(F.action == "close"))
+    service = ChatService(
+        session=session,
+        manager=manager,
+    )
+
+    await service.process_admin_message(
+        admin_id=admin.id,
+        chat_id=chat.id,
+        text=AdminMessage.ADMIN_IS_GONNA_ANSWER_YOU,
+    )
+
+@router.callback_query(AdminAction.filter(F.action == Action.close))
 async def admin_answer(
         query: CallbackQuery,
         callback_data: AdminAction,
@@ -139,6 +150,17 @@ async def admin_answer(
     await query.answer()
     await query.message.answer(
         text=AdminMessage.SUCCESSFULLY_CLOSED,
+    )
+
+    service = ChatService(
+        session=session,
+        manager=manager,
+    )
+
+    await service.process_admin_message(
+        admin_id=admin.id,
+        chat_id=chat.id,
+        text=AdminMessage.ADMIN_CLOSED_DIALOG,
     )
 
 @router.message()
