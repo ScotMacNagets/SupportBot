@@ -6,7 +6,7 @@ from aiogram.types import Message as TelegramMessage, CallbackQuery
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from callbacks.admin_message_callback import AdminAction
+from callbacks.admin_message_callback import AdminAction, Action
 from core.config import settings
 from core.connection_manager import manager
 from core.models import Admin, Message, Chat
@@ -59,36 +59,45 @@ logger = logging.getLogger(__name__)
 #         text=message.text,
 #     )
 
-@router.callback_query(AdminAction.filter(F.action == "answer"))
+async def _get_admin(session: AsyncSession, telegram_id: int) -> Admin | None:
+    return await session.scalar(select(Admin).where(Admin.telegram_id == telegram_id))
+
+async def _answer_query(query, text: str):
+    await query.answer()
+    await query.message.answer(text=text)
+
+@router.callback_query(AdminAction.filter(F.action == Action.answer))
 async def admin_answer(
         query: CallbackQuery,
         callback_data: AdminAction,
         session: AsyncSession,
 ):
     chat = await session.get(Chat, callback_data.chat_id)
-    admin = await session.scalar(
-        select(Admin).where(Admin.telegram_id == query.from_user.id)
+    admin = await _get_admin(
+        session=session,
+        telegram_id=query.from_user.id,
     )
 
     if chat.status == settings.chat_states.closed:
-        await query.answer()
-        await query.message.answer(
-            text=AdminMessage.ALREADY_CLOSED
+        await _answer_query(
+            query=query,
+            text=AdminMessage.ALREADY_CLOSED,
         )
         return
 
     if chat.status == settings.chat_states.active:
-        await query.answer()
-        await query.message.answer(
+        await _answer_query(
+            query=query,
             text=AdminMessage.ALREADY_TOOK,
         )
         return
+
     await session.commit()
 
     if admin.current_chat_id:
-        await query.answer()
-        await query.message.answer(
-            text=AdminMessage.CLOSE_YOUR_CURRENT_CHAT
+        await _answer_query(
+            query=query,
+            text=AdminMessage.CLOSE_YOUR_CURRENT_CHAT,
         )
         return
 
@@ -123,20 +132,22 @@ async def admin_answer(
 ):
     chat = await session.get(Chat, callback_data.chat_id)
 
-    admin = await session.scalar(
-        select(Admin).where(Admin.telegram_id == query.from_user.id)
+    admin = await _get_admin(
+        session=session,
+        telegram_id=query.from_user.id,
     )
 
     if chat.status == settings.chat_states.closed:
-        await query.answer()
-        await query.message.answer(
-            text=AdminMessage.ALREADY_CLOSED
+        await _answer_query(
+            query=query,
+            text=AdminMessage.ALREADY_CLOSED,
         )
+        return
 
     if admin.current_chat_id != chat.id:
-        await query.answer()
-        await query.message.answer(
-            text=AdminMessage.ACCEPT_THEN_CLOSE
+        await _answer_query(
+            query=query,
+            text=AdminMessage.ACCEPT_THEN_CLOSE,
         )
         return
 
