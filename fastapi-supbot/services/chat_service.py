@@ -60,23 +60,23 @@ class ChatService:
             )
 
 
-        #отправляем пользователю его же сообщение
-        payload = {
-            "type": "message",
-            "message": {
-                "id": message.id,
-                "chat_id": message.chat_id,
-                "sender_id": message.sender_id,
-                "sender_role": message.sender_role,
-                "text": message.message,
-                "created_at": message.sent_at.isoformat(),
-            }
-        }
-
-        await self.manager.send_to_user(
-            user_id=user_id,
-            data=payload,
-        )
+        # #отправляем пользователю его же сообщение
+        # payload = {
+        #     "type": "message",
+        #     "message": {
+        #         "id": message.id,
+        #         "chat_id": message.chat_id,
+        #         "sender_id": message.sender_id,
+        #         "sender_role": message.sender_role,
+        #         "text": message.message,
+        #         "created_at": message.sent_at.isoformat(),
+        #     }
+        # }
+        #
+        # await self.manager.send_to_user(
+        #      user_id=user_id,
+        #      data=payload,
+        #  )
 
 
 
