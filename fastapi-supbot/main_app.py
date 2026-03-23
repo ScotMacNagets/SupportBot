@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
 
 from api import router as api_router
 from core.config import settings
@@ -19,4 +20,6 @@ async def lifespan(app: FastAPI):
 main_app = FastAPI(
     lifespan=lifespan,
 )
+
+main_app.mount("/static", StaticFiles(directory="static"), name="static")
 main_app.include_router(api_router, prefix=settings.api.prefix)
