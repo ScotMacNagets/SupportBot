@@ -149,12 +149,15 @@ class ChatService:
             text=text,
         )
 
+        chat = await self.chat_repo.get_chat(chat_id)
+        chat_status = chat.status
+
         msg = await bot.send_message(
             chat_id=admin_id,
             text=message,
             reply_markup=await keyboards.answer_keyboard(
                 chat_id=chat_id,
-                # first_message=first_message,
+                chat_status=chat_status,
             ),
         )
         telegram_message_id = msg.message_id
