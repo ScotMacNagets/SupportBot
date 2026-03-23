@@ -9,6 +9,9 @@ class RunConfig(BaseModel):
     host: str = "localhost"
     port: int = 8000
 
+class SuperUser(BaseModel):
+    username: str
+
 class ChatStates(BaseModel):
     new: str = "new"
     active: str = "active"
@@ -55,7 +58,7 @@ class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     cb: CallbackDataPrefix = CallbackDataPrefix()
     chat_states: ChatStates = ChatStates()
-    cb_sep: CallbackDataSep = CallbackDataSep()
+    superuser: SuperUser
     db: DatabaseConfig
     bot: BotSettings
 
