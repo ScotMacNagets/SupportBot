@@ -34,14 +34,13 @@ async def get_admin_before_delete(session: AsyncSession, telegram_id: int):
     return None
 
 async def delete_admin(session: AsyncSession, telegram_id: int):
-    query = select(Admin).where(
+    query = delete(Admin).where(
         Admin.telegram_id == telegram_id,
     )
-    result = await session.execute(query)
-    admin_to_delete = result.scalar_one()
-    await session.delete(admin_to_delete)
+    await session.execute(query)
     await session.commit()
-    return admin_to_delete
+
+
 
 async def superuser_check(session: AsyncSession, telegram_id: int):
     query = select(Admin).where(
