@@ -175,7 +175,7 @@ async def admin_answer(
     )
 
 @router.message()
-async def admin_answer(
+async def admin_message_handler(
         message: TelegramMessage,
         session: AsyncSession,
 ):

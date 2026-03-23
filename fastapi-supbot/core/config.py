@@ -1,6 +1,7 @@
 from pydantic import BaseModel, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class BotSettings(BaseModel):
     token: str
 
@@ -8,17 +9,27 @@ class RunConfig(BaseModel):
     host: str = "localhost"
     port: int = 8000
 
+class SuperUser(BaseModel):
+    username: str
+
 class ChatStates(BaseModel):
     new: str = "new"
     active: str = "active"
     closed: str = "closed"
+
+class SuperUserMenuPrefix(BaseModel):
+    prefix: str = "superuser"
+
+class SuperUserAdminDeletePrefix(BaseModel):
+    prefix: str = "admin_delete"
 
 class AdminActionPrefix(BaseModel):
     prefix: str = "adm"
 
 class CallbackDataPrefix(BaseModel):
     admin_action: AdminActionPrefix = AdminActionPrefix()
-
+    superuser_admin_delete: SuperUserAdminDeletePrefix = SuperUserAdminDeletePrefix()
+    superuser_menu: SuperUserMenuPrefix = SuperUserMenuPrefix()
 
 class ApiV1Prefix(BaseModel):
     prefix: str = "/v1"
@@ -47,6 +58,7 @@ class Settings(BaseSettings):
     api: ApiPrefix = ApiPrefix()
     cb: CallbackDataPrefix = CallbackDataPrefix()
     chat_states: ChatStates = ChatStates()
+    superuser: SuperUser
     db: DatabaseConfig
     bot: BotSettings
 

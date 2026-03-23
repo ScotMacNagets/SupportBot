@@ -4,6 +4,7 @@ from .user import User
 from .admin import Admin
 from .chat import Chat
 from .message import Message
+from .key import Key
 
 __all__ = (
     "db_helper",
@@ -12,4 +13,5 @@ __all__ = (
     "Chat",
     "Admin",
     "Message",
+    "Key",
 )

@@ -16,6 +16,7 @@ class Admin(Base):
         DateTime(timezone=True),
         server_default=func.now()
     )
+    is_superuser: Mapped[bool] = mapped_column(default=False)
     # status: Mapped[str] = mapped_column(default='free')
     current_chat_id: Mapped[int | None]
     chats: Mapped[List["Chat"]] = relationship(back_populates="admin")
