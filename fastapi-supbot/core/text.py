@@ -13,6 +13,8 @@ class AdminMessage:
     ACCEPT_THEN_CLOSE="Сначала ✅ прими диалог, а потом нажми кнопку ⛔ закрыть"
     SUCCESSFULLY_CLOSED="✅ Диалог успешно завершен"
     DONT_HAVE_ACTIVE_CHAT="⛔ У тебя нет активного диалога"
+    ADMIN_IS_GONNA_ANSWER_YOU= "😊 Администратор принял ваше сообщение. Ожидайте ответа."
+    ADMIN_CLOSED_DIALOG="😉 Диалог закрыт, спасибо за обращение"
 
 class AdminRegister:
     INPUT_REGISTER_KEY="Введите <b>уникальный ключ</b> для регистрации"

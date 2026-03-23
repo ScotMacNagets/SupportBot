@@ -49,7 +49,6 @@ class ChatService:
                 admin_id=chat.admin.telegram_id,
                 chat_id=chat.id,
                 text=text,
-                # first_message = False
             )
 
         #если новый, то просто посылаем уведомление всем свободным админам
@@ -60,23 +59,23 @@ class ChatService:
             )
 
 
-        #отправляем пользователю его же сообщение
-        payload = {
-            "type": "message",
-            "message": {
-                "id": message.id,
-                "chat_id": message.chat_id,
-                "sender_id": message.sender_id,
-                "sender_role": message.sender_role,
-                "text": message.message,
-                "created_at": message.sent_at.isoformat(),
-            }
-        }
-
-        await self.manager.send_to_user(
-            user_id=user_id,
-            data=payload,
-        )
+        # #отправляем пользователю его же сообщение
+        # payload = {
+        #     "type": "message",
+        #     "message": {
+        #         "id": message.id,
+        #         "chat_id": message.chat_id,
+        #         "sender_id": message.sender_id,
+        #         "sender_role": message.sender_role,
+        #         "text": message.message,
+        #         "created_at": message.sent_at.isoformat(),
+        #     }
+        # }
+        #
+        # await self.manager.send_to_user(
+        #      user_id=user_id,
+        #      data=payload,
+        #  )
 
 
 
@@ -144,19 +143,21 @@ class ChatService:
             admin_id: int,
             chat_id: int,
             text: str,
-            # first_message: bool = True,
     ):
         #формуруем и отправляем сообщение
         message = ChatServiceText.SEND_TO_ADMIN_MESSAGE.format(
             text=text,
         )
 
+        chat = await self.chat_repo.get_chat(chat_id)
+        chat_status = chat.status
+
         msg = await bot.send_message(
             chat_id=admin_id,
             text=message,
             reply_markup=await keyboards.answer_keyboard(
                 chat_id=chat_id,
-                # first_message=first_message,
+                chat_status=chat_status,
             ),
         )
         telegram_message_id = msg.message_id

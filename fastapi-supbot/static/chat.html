@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Support Chat</title>
+
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+
+<!-- КНОПКА -->
+<div class="chat-toggle" onclick="toggleChat()">💬</div>
+
+<!-- ЧАТ -->
+<div class="chat-container" id="chat">
+    <div class="chat-header">
+        <div>Поддержка</div>
+        <div onclick="toggleChat()" style="cursor:pointer;">✕</div>
+    </div>
+
+    <div class="messages" id="messages"></div>
+
+    <div class="input-area">
+        <input id="input" placeholder="Сообщение..." />
+        <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script src="/static/app.js"></script>
+
+</body>
+</html>
