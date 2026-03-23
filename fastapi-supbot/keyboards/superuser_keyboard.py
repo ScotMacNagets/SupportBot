@@ -49,6 +49,12 @@ async def delete_admin_keyboard(telegram_id: int):
             action=Action.confirm_delete,
             telegram_id=telegram_id,
         )
+async def back_to_the_main_menu_keyboard():
+    builder = InlineKeyboardBuilder()
+
+    builder.button(
+        text=AdminSuperuserKeyboard.BACK_TO_THE_MAIN_MENU,
+        callback_data=SuperuserAction.back_to_the_main_menu
     )
 
     return builder.as_markup()

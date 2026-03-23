@@ -124,7 +124,18 @@ async def confirm_delete(
     await query.answer()
     await query.message.edit_text(
         text=AdminSuperuser.ADMIN_IS_BUSY,
+        reply_markup=await back_to_the_main_menu_keyboard()
         )
+
+@router.callback_query(F.data == SuperuserAction.back_to_the_main_menu)
+async def back_to_the_main_menu(
+    query: CallbackQuery,
+):
+    await query.message.edit_text(
+        text=AdminSuperuser.WELCOME_TO_SUPERUSER_MENU,
+        reply_markup=await build_superuser_menu_keyboard()
+    )
+
 
 
 
