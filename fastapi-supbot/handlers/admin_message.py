@@ -60,7 +60,7 @@ logger = logging.getLogger(__name__)
 #     )
 
 @router.callback_query(AdminAction.filter(F.action == "answer"))
-async def admin_answer(
+async def admin_answer_callback(
         query: CallbackQuery,
         callback_data: AdminAction,
         session: AsyncSession,
@@ -105,7 +105,7 @@ async def admin_answer(
     )
 
 @router.callback_query(AdminAction.filter(F.action == "close"))
-async def admin_answer(
+async def admin_close_callback(
         query: CallbackQuery,
         callback_data: AdminAction,
         session: AsyncSession,
@@ -142,7 +142,7 @@ async def admin_answer(
     )
 
 @router.message()
-async def admin_answer(
+async def admin_message_handler(
         message: TelegramMessage,
         session: AsyncSession,
 ):
