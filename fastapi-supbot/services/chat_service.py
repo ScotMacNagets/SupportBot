@@ -49,7 +49,6 @@ class ChatService:
                 admin_id=chat.admin.telegram_id,
                 chat_id=chat.id,
                 text=text,
-                # first_message = False
             )
 
         #если новый, то просто посылаем уведомление всем свободным админам
@@ -144,7 +143,6 @@ class ChatService:
             admin_id: int,
             chat_id: int,
             text: str,
-            # first_message: bool = True,
     ):
         #формуруем и отправляем сообщение
         message = ChatServiceText.SEND_TO_ADMIN_MESSAGE.format(
