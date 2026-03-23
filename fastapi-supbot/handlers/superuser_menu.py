@@ -110,6 +110,10 @@ async def confirm_delete(
         telegram_id=callback_data.telegram_id
     )
     if admin:
+        await delete_admin(
+            session=session,
+            telegram_id=callback_data.telegram_id
+        )
         await query.answer()
         await query.message.edit_text(
             text=AdminSuperuser.SUCCESSFULLY_DELETED.format(
