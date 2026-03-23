@@ -1,14 +1,16 @@
 
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.filters.callback_data import CallbackData
 
 from aiogram.types import Message, CallbackQuery
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from callbacks.super_user_menu_callback import Action, AdminDeleteAction, SuperuserMenuAction
-from keyboards.superuser_keyboard import build_superuser_menu_keyboard, build_admin_list, delete_admin_keyboard
-from services.admin_repo import get_all_admins, get_admin_before_delete, get_admin, superuser_check
+from callbacks.super_user_menu_callback import SuperuserAction, SuperuserAdminDelete, SuperuserDeleteActions, \
+    SuperuserMenu
+from core.text import AdminSuperuser
+from keyboards.superuser_keyboard import build_superuser_menu_keyboard, build_admin_list, delete_admin_keyboard, \
+    back_to_the_main_menu_keyboard
+from services.admin_repo import get_all_admins, get_admin_before_delete, get_admin, superuser_check, delete_admin
 from services.key_repo import generate_new_key
 
 router = Router()
@@ -34,7 +36,7 @@ async def superuser_menu(
         text="У тебя нет доступа к этому меню"
     )
 
-@router.callback_query(CallbackData.filter(F.action == Action.realise_new_key))
+@router.callback_query(SuperuserMenu.filter(F.action == SuperuserAction.realise_new_key))
 async def realise_new_key(
         query: CallbackQuery,
         callback_data: SuperuserMenuAction,
@@ -52,7 +54,7 @@ async def realise_new_key(
             text="Не удалось сгенерировать новый ключ, попробуйте позже"
         )
 
-@router.callback_query(CallbackData.filter(F.action == Action.admin_list))
+@router.callback_query(SuperuserMenu.filter(F.action == SuperuserAction.admin_list))
 async def admin_list(
         query: CallbackQuery,
         callback_data: SuperuserMenuAction,
@@ -65,8 +67,7 @@ async def admin_list(
         reply_markup=build_admin_list(admins=admins)
     )
 
-@router.callback_query(CallbackData.filter(F.action == Action.admin_delete))
-async def delete_admin(
+@router.callback_query(SuperuserAdminDelete.filter(F.action == SuperuserDeleteActions.admin_delete))
     query: CallbackQuery,
     callback_data: AdminDeleteAction,
     session: AsyncSession,
@@ -87,7 +88,7 @@ async def delete_admin(
         text="Админ не найден, попробуйте позже"
     )
 
-@router.callback_query(CallbackData.filter(F.action == Action.confirm_delete))
+@router.callback_query(SuperuserAdminDelete.filter(F.action == SuperuserDeleteActions.confirm_delete))
 async def confirm_delete(
         query: CallbackQuery,
         callback_data: AdminDeleteAction,
