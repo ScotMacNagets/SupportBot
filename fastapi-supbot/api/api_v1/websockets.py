@@ -16,12 +16,17 @@ router = APIRouter(
 )
 
 @router.websocket("/ws")
-async def ws(websocket: WebSocket, user_id: int):
+async def ws(websocket: WebSocket):
     async for session in db_helper.session_getter():
         service = ChatService(session, manager)
 
-        await manager.connect(websocket=websocket, user_id=user_id)
-        await service.send_missed_messages(user_id=user_id)
+        user_id = websocket.query_params.get("user_id")
+
+        user = await service.get_or_create_user(user_id=user_id)
+
+
+        await manager.connect(websocket=websocket, user_id=user.id)
+        await service.send_missed_messages(user_id=user.id)
 
 
         try:
@@ -30,9 +35,9 @@ async def ws(websocket: WebSocket, user_id: int):
                 text = data["message"]
 
                 await service.process_user_message(
-                    user_id=user_id,
+                    user_id=user.id,
                     text=text,
                 )
         except WebSocketDisconnect:
-            await manager.disconnect(user_id)
+            await manager.disconnect(user.id)
 

@@ -1,8 +1,22 @@
-const userId = 1;
+// const userId = 1;
 let ws;
 let messageCounter = 0;
 
 const messagesDiv = document.getElementById("messages");
+
+/* UserId Generation */
+function getUserId() {
+  let userId = localStorage.getItem("user_id");
+
+  if (!userId) {
+    userId = crypto.randomUUID(); // генерим UUID
+    localStorage.setItem("user_id", userId);
+  }
+
+  return userId;
+}
+
+const userId = getUserId();
 
 /* TOGGLE */
 function toggleChat() {
@@ -12,27 +26,24 @@ function toggleChat() {
 
 /* CONNECT */
 function connect() {
-    ws = new WebSocket(`ws://localhost:8000/api/v1/websocket/ws?user_id=${userId}`);
+  ws = new WebSocket(`ws://localhost:8000/api/v1/websocket/ws?user_id=${userId}`);
 
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
 
-        if (data.type === "message") {
-            const msg = data.message;
+    if (data.type === "message") {
+      const msg = data.message;
 
-            // обновляем статус если это наше сообщение
-            updateMessageStatus(msg.id, "delivered");
+      updateMessageStatus(msg.id, "delivered");
 
-            addMessage(
-                msg.text,
-                msg.sender_role === "user" ? "user" : "support",
-                msg.created_at,
-                msg.id
-            );
-        }
-    };
-
-    ws.onclose = () => setTimeout(connect, 2000);
+      addMessage(
+        msg.text,
+        msg.sender_role === "user" ? "user" : "support",
+        msg.created_at,
+        msg.id
+      );
+    }
+  };
 }
 
 connect();
