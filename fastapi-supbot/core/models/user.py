@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 class User(Base):
     username: Mapped[str]
+    external_id: Mapped[str] = mapped_column(unique=True, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
