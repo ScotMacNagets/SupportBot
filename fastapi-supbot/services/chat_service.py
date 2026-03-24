@@ -8,10 +8,11 @@ import keyboards
 from core.bot_instance import bot
 from core.config import settings
 from core.connection_manager import ConnectionManager
-from core.models import Message, Chat, Admin
+from core.models import Message, Chat, Admin, User
 from core.text import ChatServiceText
 from .chat_repo import ChatRepository
 from .message_repo import MessageRepository
+from .user_repo import UserRepository
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class ChatService:
 
         self.chat_repo = ChatRepository(session)
         self.message_repo = MessageRepository(session)
+        self.user_repo = UserRepository(session)
 
     async def process_user_message(self, user_id: int, text: str):
         #достаем чат или создаем новый
@@ -207,4 +209,12 @@ class ChatService:
             )
             # помечаем сообщения, как доставленные
             await self.message_repo.mark_message_delivered(message_id=message.id)
+
+    async def get_or_create_user(self, user_id: int) -> User:
+        user = await self.user_repo.get_user(user_id)
+        if user:
+            return user
+        else:
+            user = await self.user_repo.create_user(user_id=user_id,)
+            return user
 
